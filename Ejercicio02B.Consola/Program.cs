@@ -1,13 +1,14 @@
 ﻿using ConsoleTables;
+using Ejercicio02B.Entidades;
 
-namespace Ejercicio02.Consola
+namespace Ejercicio02B.Consola
 {
     internal class Program
     {
         static void Main(string[] args)
         {
             string? opcionSeleccionada;
-            int[] velocidades = new int[5];
+            Velocidad[] velocidades = new Velocidad[5];
             do
             {
 
@@ -45,13 +46,14 @@ namespace Ejercicio02.Consola
                 }
             } while (true);
         }
-        private static bool EstaVacio(int[] velocidades)=>velocidades.All(x => x == 0);
-        private static void OrdenarVector(int[] velocidades)
+
+        private static void OrdenarVector(Velocidad[] velocidades)
         {
             if (!EstaVacio(velocidades))
             {
-                Array.Sort(velocidades);
-                MostrarVelocidades(velocidades);
+                //Array.Sort(velocidades);
+                var vectorOrdenado=velocidades.OrderBy(v=>v.Magnitud).ToArray();
+                MostrarVelocidades(vectorOrdenado);
 
             }
             else
@@ -61,41 +63,52 @@ namespace Ejercicio02.Consola
             }
         }
 
-        private static void MarcarSuperioresPromedio(int[] velocidades)
+        private static void MarcarSuperioresPromedio(Velocidad[] velocidades)
         {
-            var promedio = velocidades.Average();
             Console.Clear();
             Console.WriteLine("Listado de Velocidades con superiores al promedio");
-            Console.WriteLine($"Promedio........: {promedio:N2}");
-            var tabla = new ConsoleTable("Pos", "Km", "Millas", "Sup. Promedio");
-            for (int i = 0; i < velocidades.Length; i++)
+            if (!EstaVacio(velocidades))
             {
-                var millas = ConvertirKmMillas(velocidades[i]);
-                if (velocidades[i] > promedio)
+                var promedio = velocidades.Average(v => v.Magnitud);
+                Console.WriteLine($"Promedio........: {promedio:N2}");
+                var tabla = new ConsoleTable("Pos", "Km", "Millas", "Sup. Promedio");
+                for (int i = 0; i < velocidades.Length; i++)
                 {
-                    tabla.AddRow(i, velocidades[i], millas, "*");
 
+                    if (velocidades[i].Magnitud > promedio)
+                    {
+                        tabla.AddRow(i, velocidades[i],
+                            velocidades[i].ConvertirKmMillas().ToString("N2"), "*");
+
+                    }
+                    else
+                    {
+                        tabla.AddRow(i, velocidades[i],
+                            velocidades[i].ConvertirKmMillas().ToString("N2"), string.Empty);
+
+                    }
                 }
-                else
-                {
-                    tabla.AddRow(i, velocidades[i], millas,string.Empty);
-                }
+                Console.WriteLine(tabla.ToString());
+
             }
-            Console.WriteLine(tabla.ToString());
+            else
+            {
+                Console.WriteLine("Array sin datos!!!!");
+            }
             EsperarTecla("Listado finalizado... Tecla para continuar");
 
         }
 
-        private static void DatosEstadisticos(int[] velocidades)
+        private static void DatosEstadisticos(Velocidad[] velocidades)
         {
             Console.Clear();
             Console.WriteLine("Datos Estadísticos del Vector");
             if (!EstaVacio(velocidades))
             {
-                var maxVelocidad = velocidades.Max();
-                var minVelocicad = velocidades.Min();
-                var promVelocidad = velocidades.Average();
-                var cantidadInferiorPromedio = velocidades.Count(v => v < promVelocidad);
+                var maxVelocidad = velocidades.Max(v => v.Magnitud);
+                var minVelocicad = velocidades.Min(v => v.Magnitud);
+                var promVelocidad = velocidades.Average(v => v.Magnitud);
+                var cantidadInferiorPromedio = velocidades.Count(v => v.Magnitud < promVelocidad);
                 Console.WriteLine($"Mayor Velocidad: {maxVelocidad}");
                 Console.WriteLine($"Menor Veloclidad: {minVelocicad}");
                 Console.WriteLine($"Promedio........: {promVelocidad}");
@@ -107,9 +120,10 @@ namespace Ejercicio02.Consola
                 Console.WriteLine("Array sin datos!!!");
             }
             EsperarTecla("Proceso finalizado... tecla para continuar");
+
         }
 
-        private static void MostrarVelocidades(int[] velocidades)
+        private static void MostrarVelocidades(Velocidad[] velocidades)
         {
             Console.Clear();
             Console.WriteLine("Listado de Velocidades");
@@ -118,8 +132,9 @@ namespace Ejercicio02.Consola
                 var tabla = new ConsoleTable("Pos", "Km", "Millas");
                 for (int i = 0; i < velocidades.Length; i++)
                 {
-                    var millas = ConvertirKmMillas(velocidades[i]);
-                    tabla.AddRow(i, velocidades[i], millas);
+
+
+                    tabla.AddRow(i, velocidades[i], velocidades[i].ConvertirKmMillas().ToString("N2"));
                 }
                 Console.WriteLine(tabla.ToString());
 
@@ -129,20 +144,26 @@ namespace Ejercicio02.Consola
                 Console.WriteLine("Array sin datos!!!");
             }
             EsperarTecla("Listado finalizado... Tecla para continuar");
+
         }
 
-        private static void IngresarDatos(int[] velocidades)
+        private static bool EstaVacio(Velocidad[] velocidades)
+        {
+            return velocidades.All(v => v.Magnitud == 0 && v.Escala == null);
+        }
+
+        private static void IngresarDatos(Velocidad[] velocidades)
         {
             Console.Clear();
             Console.WriteLine("Ingreso de Velocidades al vector");
             for (int i = 0; i < velocidades.Length; i++)
             {
-                int velocidad;
+                int velocidadIngresada;
                 do
                 {
                     Console.Write($"Ingrese la {i + 1} velocidad:");
-                    if (!int.TryParse(Console.ReadLine(), out velocidad) ||
-                        velocidad < 100 || velocidad > 300)
+                    if (!int.TryParse(Console.ReadLine(), out velocidadIngresada) ||
+                        velocidadIngresada < 100 || velocidadIngresada > 300)
                     {
                         Console.WriteLine("Velocada mal ingresada o fuera de rango [100 -300]");
                     }
@@ -152,20 +173,17 @@ namespace Ejercicio02.Consola
                     }
 
                 } while (true);
+                Velocidad velocidad = new Velocidad(velocidadIngresada, "Km.");
                 velocidades[i] = velocidad;
             }
             EsperarTecla("Ingreso finalizado... Presione tecla para continuar");
         }
-
         private static void EsperarTecla(string mensaje)
         {
             Console.WriteLine(mensaje);
             Console.ReadLine();
         }
 
-        private static double ConvertirKmMillas(int v)
-        {
-            return v * 0.6214;
-        }
+
     }
 }
