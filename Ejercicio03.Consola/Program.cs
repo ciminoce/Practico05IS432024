@@ -1,7 +1,7 @@
 ﻿
 
 using ConsoleTables;
-using System.Net.Http.Headers;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Ejercicio03.Consola
 {
@@ -57,23 +57,44 @@ namespace Ejercicio03.Consola
         {
             Console.Clear();
             Console.WriteLine("Listado de Nombres con Datos Adicionales");
-            var tabla = new ConsoleTable("Nombre","Cant. Letras","Cant.Voc");
-            foreach (var item in personas)
+            if (!VectorVacio(personas))
             {
-                tabla.AddRow(item, item.Length,VerCantidadVocales(item));
+                var tabla = new ConsoleTable("Nombre", "Cant. Letras", "Cant.Voc");
+                foreach (var item in personas)
+                {
+                    tabla.AddRow(item, item.Length, VerCantidadVocales(item));
+                }
+                Console.WriteLine(tabla.ToString());
+                EsperaTecla("Listado de nombres x letra terminado!!!");
+
             }
-            Console.WriteLine(tabla.ToString());
-            EsperaTecla("Listado de nombres x letra terminado!!!");
+            else
+            {
+                EsperaTecla("No se han ingresado personas todavía!!!");
 
+            }
         }
-
+        /// <summary>
+        /// Método para chequear si el vector está vacío
+        /// </summary>
+        /// <param name="personas"></param>
+        /// <returns></returns>
+        private static bool VectorVacio(string[] personas) => personas.All(p => p.Length == 0);
         private static void OrdenarVector(string[] personas)
         {
-            Array.Sort(personas);
             Console.Clear();
             Console.WriteLine("Listado Ordenado de Nombres");
-            ImprimirListado(personas);
-            EsperaTecla("Listado ordenado finalizado");
+            if (!VectorVacio(personas))
+            {
+                Array.Sort(personas);
+                ImprimirListado(personas);
+                EsperaTecla("Listado ordenado finalizado");
+
+            }
+            else
+            {
+                EsperaTecla("No se han ingresado personas todavía!!!");
+            }
         }
         private static int VerCantidadVocales(string nombre)
         {
@@ -83,10 +104,15 @@ namespace Ejercicio03.Consola
             //recorro el array y veo si está contenio en vocales
             for (int i = 0; i < letras.Length; i++)
             {
-                if (vocales.Contains(letras[i].ToString().ToUpper()))
+                //if (vocales.Contains(letras[i].ToString().ToUpper()))
+                //{
+                //    cantidadVocales++;
+                //}
+                if (vocales.Contains(letras[i].ToString(),StringComparison.OrdinalIgnoreCase))
                 {
                     cantidadVocales++;
                 }
+
             }
             return cantidadVocales;
         }
@@ -95,38 +121,62 @@ namespace Ejercicio03.Consola
         {
             Console.Clear();
             Console.WriteLine("Nombres por Letra Inicial");
-            var tabla = new ConsoleTable("Letra", "Cantidad");
-            for (int i = 65; i <= 90; i++)
+            if (!VectorVacio(personas))
             {
-                char letra = Convert.ToChar(i);
-                int cantidad = personas
-                    .Count(p => p.ToUpper()
-                    .StartsWith(letra.ToString()));
-                tabla.AddRow(letra,cantidad);
-            }
-            Console.WriteLine(tabla.ToString());
-            EsperaTecla("Listado por letra finalizado");
-        }
+                var tabla = new ConsoleTable("Letra", "Cantidad");
+                for (int i = 65; i <= 90; i++)
+                {
+                    char letra = Convert.ToChar(i);
+                    int cantidad = personas
+                        .Count(p => p.ToUpper()
+                        .StartsWith(letra.ToString()));
+                    tabla.AddRow(letra, cantidad);
+                }
+                Console.WriteLine(tabla.ToString());
+                EsperaTecla("Listado por letra finalizado");
 
-        private static void ListadoPorLetraInicial(string[] personas)
+            }
+            else
+            {
+                EsperaTecla("No se han ingresado personas todavía!!!");
+
+            }
+        }
+            private static void ListadoPorLetraInicial(string[] personas)
         {
             Console.Clear();
             Console.WriteLine("Listado de Letra Inicial");
-            Console.Write("Ingrese letra:");
-            //TODO: Mejorar el control de error acá
-            string letra = Console.ReadLine();
-            var tabla = new ConsoleTable("Nombre");
-            foreach (var item in personas)
+
+            if (!VectorVacio(personas))
             {
-                if (item.StartsWith(letra))
+                string letra = GetString("Ingrese letra:", 1);
+                var tabla = new ConsoleTable("Nombre");
+                foreach (var item in personas)
                 {
-                    tabla.AddRow(item);
+                    //if (item.ToUpper().StartsWith(letra.ToUpper()))
+                    //{
+                    //    tabla.AddRow(item);
 
-                }  
+                    //}
+
+                    //otra forma!!
+                    //StringComparison.OrdinalIgnoreCase=>Ignora las mayúsculas y minúsculas
+                    if (item.ToUpper().StartsWith(letra, StringComparison.OrdinalIgnoreCase))
+                    {
+                        tabla.AddRow(item);
+
+                    }
+
+                }
+                Console.WriteLine(tabla.ToString());
+                EsperaTecla("Listado de nombres x letra terminado!!!");
+
             }
-            Console.WriteLine(tabla.ToString());
-            EsperaTecla("Listado de nombres x letra terminado!!!");
+            else
+            {
+                EsperaTecla("No se han ingresado personas todavía!!!");
 
+            }
 
         }
 
@@ -134,8 +184,16 @@ namespace Ejercicio03.Consola
         {
             Console.Clear();
             Console.WriteLine("Listado de Personas");
-            ImprimirListado(personas);
-            EsperaTecla("Listado de nombres terminado!!!");
+            if (!VectorVacio(personas))
+            {
+                ImprimirListado(personas);
+                EsperaTecla("Listado de nombres terminado!!!");
+
+            }
+            else
+            {
+                EsperaTecla("No se han ingresado personas todavía!!!");
+            }
 
         }
 
@@ -149,16 +207,16 @@ namespace Ejercicio03.Consola
             Console.WriteLine(tabla.ToString());
         }
 
-        private static void IngresarPersonas(string[]personas)
+        private static void IngresarPersonas(string[] personas)
         {
+            Console.Clear();
             for (int i = 0; i < personas.Length; i++)
             {
-                Console.Write($"Ingrese el {i + 1}º nombre:");
-                string nombre = Console.ReadLine();
-                personas[i] = nombre;
+
+                personas[i] = GetString($"Ingrese el nombre de la {i + 1}° peersona:", 12);
 
             }
-            EsperaTecla("Ingreso de nombres terminado!!!");
+            EsperaTecla("Presione una tecla para Continuar...");
         }
 
         private static void EsperaTecla(string mensaje)
@@ -166,5 +224,34 @@ namespace Ejercicio03.Consola
             Console.WriteLine(mensaje);
             Console.ReadLine();
         }
+        /// <summary>
+        /// Método para tomar por consola caracteres
+        /// </summary>
+        /// <param name="mensaje">Mensaje aclaratorio</param>
+        /// <param name="cantidad">Cantidad de caracteres permitidos</param>
+        /// <returns></returns>
+        private static string GetString(string mensaje, int cantidad)
+        {
+            string? nombre;
+            do
+            {
+                Console.Write(mensaje);
+                nombre = Console.ReadLine();
+                if (string.IsNullOrEmpty(nombre))
+                {
+                    Console.WriteLine("Debe ingresar un nombre!!!");
+                }
+                else if (nombre.Length > cantidad)
+                {
+                    Console.WriteLine($"Debe tener no más de {cantidad} caracteres!!!");
+                }
+                else
+                {
+                    break;
+                }
+            } while (true);
+            return nombre;
+        }
+
     }
 }
