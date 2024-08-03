@@ -1,14 +1,28 @@
 ﻿using ConsoleTables;
-using System.Text;
 
 namespace Ejercicio04.Consola
 {
     internal class Program
     {
-        const int MaxDias = 7;
-        static double[] temperaturas = new double[MaxDias];
-        static DateTime[] fechas = new DateTime[MaxDias];
-        static int contador = 0;
+        /// <summary>
+        /// Definición de variables globales
+        /// </summary>
+        const int MaxDias = 7;//variable que define la cantidad de elementos
+        //static double[] temperaturas = new double[MaxDias];//array de temperaturas
+        //static DateTime[] fechas = new DateTime[MaxDias];//array de fechas
+        //static int contador = 0;//contador
+
+        static double[] temperaturas = new[] { 5.0, 10, 12, 13, 15, 9, 17 };
+        static DateTime[] fechas = new[]{
+                new DateTime(2024,07,7),
+                new DateTime(2024,07,8),
+                new DateTime(2024,07,9),
+                new DateTime(2024,07,10),
+                new DateTime(2024,07,11),
+                new DateTime(2024,07,12),
+                new DateTime(2024,07,13)};//array de fechas]
+        static int contador = 6;//contador
+
         static void Main(string[] args)
         {
 
@@ -16,12 +30,13 @@ namespace Ejercicio04.Consola
 
             while (continuar)
             {
+                Console.Clear();
                 Console.WriteLine("Menú de opciones:");
-                Console.WriteLine("1. Agregar temperatura");
+                Console.WriteLine("1. Agregar temperaturas");
                 Console.WriteLine("2. Modificar temperatura");
                 Console.WriteLine("3. Listar temperaturas");
                 Console.WriteLine("4. Estadísticas");
-                Console.WriteLine("5. Marcar temperaturas superiores al promedio");
+                Console.WriteLine("5. Marcar temperaturas respecto al promedio");
                 Console.WriteLine("6. Ordenar temperaturas");
                 Console.WriteLine("7. Salir");
                 int opcion = GetIntEntre("Seleccione una opción: ", 1, 7);
@@ -45,22 +60,14 @@ namespace Ejercicio04.Consola
                         break;
 
                     case 5:
-                        MostrarMenorTemperatura();
+                        CompararTemperaturas();
                         break;
 
                     case 6:
-                        CalcularPromedio();
-                        break;
-
-                    case 7:
-                        MarcarSuperioresAlPromedio();
-                        break;
-
-                    case 8:
                         OrdenarTemperaturas();
                         break;
 
-                    case 9:
+                    case 7:
                         continuar = false;
                         break;
 
@@ -96,9 +103,11 @@ namespace Ejercicio04.Consola
             } while (true);
             return value;
         }
-        private static DateTime GetDateTime(string mensaje)
+        private static DateTime GetDateTime(string mensaje, DateTime? maxValue = null)
         {
             DateTime value;
+            DateTime maxDate = maxValue ?? DateTime.Now;
+
             do
             {
                 Console.Write($"{mensaje}");
@@ -107,16 +116,18 @@ namespace Ejercicio04.Consola
                 {
                     Console.WriteLine("Fecha mal ingresada. Vuelva a ingresarlo:");
                 }
+                else if (value > maxDate)
+                {
+                    Console.WriteLine($"La fecha ingresada no puede ser mayor que {maxDate}. Vuelva a ingresarlo:");
+                }
                 else
                 {
                     break;
                 }
 
-
-
             } while (true);
-            return value;
 
+            return value;
         }
         private static double GetDoubleEntre(string mensaje, double minValue, double maxValue)
         {
@@ -158,7 +169,9 @@ namespace Ejercicio04.Consola
             {
                 MostrarMayorTemperatura();
                 MostrarMenorTemperatura();
-                CalcularPromedio();
+                var promedio = CalcularPromedio();
+                Console.WriteLine($"Promedio de temperatura: {promedio.ToString("N1")}°C");
+
                 Console.WriteLine("Datos estadisticos cargados...");
                 EsperaTecla("Presione una tecla para Continuar...");
             }
@@ -176,12 +189,12 @@ namespace Ejercicio04.Consola
         {
             Console.Clear();
             Console.WriteLine("Ingreso de temperaturas");
-            if (true)
+            if (VectorVacio())
             {
-                for (int i = 0; i < temperaturas.Length; i++)
+                for (int contador = 0; contador < temperaturas.Length; contador++)
                 {
-                    fechas[i] = GetDateTime("Ingrese la fecha (YYYY-MM-DD): ");
-                    temperaturas[i] =
+                    fechas[contador] = GetDateTime("Ingrese la fecha (DD-MM-YYYY): ");
+                    temperaturas[contador] =
                         GetDoubleEntre("Ingrese la temperatura en grados Celsius: ", -10, 24);
                 }
                 EsperaTecla("Operación terminada!!");
@@ -195,23 +208,31 @@ namespace Ejercicio04.Consola
         static void ModificarTemperatura()
         {
             Console.Clear();
-            var tabla = new ConsoleTable("Pos. a Mod.", "Dia semana", "Celsius");
-            for (var i = 0; i < temperaturas.Length;)
+            Console.WriteLine("Modificar Datos Ingresados");
+            if (!VectorVacio())
             {
+                var tabla = new ConsoleTable("Pos. a Mod.", "Fecha", "Celsius");
+                for (var i = 0; i < temperaturas.Length; i++)
+                {
 
                     tabla.AddRow(i, fechas[i], temperaturas[i]);
 
+                }
+                Console.WriteLine(tabla.ToString());
+                var index = GetIntEntre(
+                    "Ingrese el numero de la posicion a modificar:"
+                    , 0, temperaturas.Length - 1);
+                Console.WriteLine($"Fecha anterior:{fechas[index]}");
+                Console.WriteLine($"Temperatura anterior: {temperaturas[index]}");
+                temperaturas[index] = GetIntEntre("Ingrese la nueva temperatura:", -10, 24);
+
+                EsperaTecla("Temperatura modificada!!!");
+
             }
-            Console.WriteLine(tabla.ToString());
-            var index = GetIntEntre(
-                "Ingrese el numero de la pocicion a modificar:"
-                , 0, temperaturas.Length - 1);
-            Console.WriteLine($"Temperatura anterior: {temperaturas[index]}");
-            temperaturas[index] = GetIntEntre("Ingrese la nueva temperatura:", -10, 24);
-
-
-            Console.WriteLine("Temperatura modificada!!!");
-            EsperaTecla("Presione una tecla para Continuar...");
+            else
+            {
+                EsperaTecla("Vector Vacío");
+            }
 
         }
 
@@ -219,16 +240,23 @@ namespace Ejercicio04.Consola
         {
 
             Console.Clear();
-            var tabla = new ConsoleTable("Día semana", "Celsius", "Fahreneit");
-            for (int i = 0; i < temperaturas.Length; i++)
+            Console.WriteLine("Listado de Temperaturas ingresadas");
+            if (!VectorVacio())
             {
-                tabla.AddRow(fechas[i], temperaturas[i], ConvertirAFahrenheit(temperaturas[i]));
+                var tabla = new ConsoleTable("Fecha", "Celsius", "Fahreneit");
+                for (int i = 0; i < temperaturas.Length; i++)
+                {
+                    var fah = ConvertirAFahrenheit(temperaturas[i]);
+                    tabla.AddRow(fechas[i].ToShortDateString(),
+                        temperaturas[i].ToString("N1").PadLeft(5, ' '), fah.ToString("N2").PadLeft(4, ' '));
+                }
+                Console.WriteLine(tabla.ToString());
+                EsperaTecla("Listado Finalizado");
+            }
+            else {
+                EsperaTecla("Vector Vacío" );
             }
 
-            Console.WriteLine("Listado completado...");
-
-            Console.WriteLine(tabla.ToString());
-            EsperaTecla("Presione una tecla para Continuar...");
         }
 
         private static void MostrarMayorTemperatura()
@@ -263,7 +291,7 @@ namespace Ejercicio04.Consola
             Console.WriteLine($"Menor temperatura: {fechaMenor.ToShortDateString()} - {menorTemp}°C");
         }
 
-        private static void CalcularPromedio()
+        private static double CalcularPromedio()
         {
 
             double suma = 0;
@@ -271,30 +299,50 @@ namespace Ejercicio04.Consola
             {
                 suma += temperaturas[i];
             }
-            double promedio = suma / contador;
-            Console.WriteLine($"Promedio de temperaturas: {promedio}°C");
+            return suma / contador;
         }
 
-        private static void MarcarSuperioresAlPromedio()
+        private static void CompararTemperaturas()
         {
 
             Console.Clear();
-            var promedio = temperaturas.Average();
-            var tabla = new ConsoleTable($"Temp. Prom:{promedio}", "Temperatura", "Fecha", "Mayor. Prom");
-            Console.WriteLine("Datos cargado correctamente...");
-            for(int i=0;i<temperaturas.Length;i++)
+            Console.WriteLine("Comparar Temperaturas");
+            if (!VectorVacio())
             {
-                tabla.AddRow("", temperaturas[i], fechas[i] ,
-                    temperaturas[i] > promedio ? "Mayor al Promedio" : "Menor al Promedio");
+                var promedio = CalcularPromedio();
+                var tabla = new ConsoleTable($"Temp. Prom:{promedio.ToString("N1")}", "Temperatura", "Fecha", "Respecto al Prom");
+                Console.WriteLine("Datos cargado correctamente...");
+                for (int i = 0; i < temperaturas.Length; i++)
+                {
+                    tabla.AddRow("", temperaturas[i], fechas[i],
+                        temperaturas[i] > promedio ? "Mayor al Promedio" : "Menor al Promedio");
+                }
+                Console.WriteLine(tabla.ToString());
+                EsperaTecla("Presione una tecla para Continuar...");
+
             }
-            Console.WriteLine(tabla.ToString());
-            EsperaTecla("Presione una tecla para Continuar...");
+            else
+            {
+                EsperaTecla("Vector Vacío");
+            }
         }
 
         static void OrdenarTemperaturas()
         {
-            Array.Sort(temperaturas, fechas, 0, contador);
-            Console.WriteLine("Temperaturas ordenadas.");
+            Console.Clear();
+            Console.WriteLine("Listado Ordenado");
+            if (!VectorVacio())
+            {
+                Array.Sort(temperaturas, fechas, 0, contador);
+                ListarTemperaturas();
+                EsperaTecla("Presione Enter para continuar");
+
+            }
+            else
+            {
+                EsperaTecla("Vector Vacío");
+            }
+
         }
 
         static double ConvertirAFahrenheit(double celsius)
